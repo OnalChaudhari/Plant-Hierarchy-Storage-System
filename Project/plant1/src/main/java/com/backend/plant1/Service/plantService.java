@@ -3,12 +3,16 @@ import com.backend.plant1.Entities.RootNode;
 import com.backend.plant1.Entities.plantBasic;
 import com.backend.plant1.Repository.RootRepository;
 import com.backend.plant1.dto.PlantDTO;
+import com.backend.plant1.dto.PlantDetailsDTO;
 import com.backend.plant1.dto.RootDTO;
 import com.backend.plant1.Repository.plantRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -33,17 +37,21 @@ public class plantService {
         }
     }
 
-    public void addRootNode(@Valid RootDTO rootDTO) {
+    public ResponseEntity<String> addRootNode(@Valid RootDTO rootDTO) {
         try {
             RootNode rootNode = rootDTO.toEntity();
             this.rootRepository.save(rootNode);
             System.out.println("Root Node added successfully!" + rootNode);
-
+            return ResponseEntity.ok("Plant saved successfully!");
         } catch (Exception e) {
             // Handle any exceptions, e.g., database errors
-            e.getMessage();
+            String errorMessage = "Error adding root node: " + e.getMessage();
+            System.err.println(errorMessage);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMessage);
         }
     }
+
+
     public Optional<plantBasic> deleteNode(Long nodeId) {
 
         Optional<plantBasic> parentOptional = this.plantRepository.findById(nodeId);
@@ -79,7 +87,7 @@ public class plantService {
         }
     }
 
-    public void addDetails(Long nodeId,String desc) {
+    public void addDetails(Long nodeId, String desc) {
         Optional<plantBasic> optionalPlant = plantRepository.findById(nodeId);
 
         if (optionalPlant.isPresent()) {
@@ -99,16 +107,14 @@ public class plantService {
         }
     }
 
+
     public Optional<plantBasic> getHierarchy(Long nodeId) {
-       Optional<plantBasic> parentOptional = this.plantRepository.findById(nodeId);
-            return parentOptional;
-        }
-//
-//
-//    }
+        Optional<plantBasic> parentOptional = this.plantRepository.findById(nodeId);
+        return parentOptional;
+    }
 
 
-//
+    //----------------------------------------------------------------------------------------------------------
 //    public PlantDTO getNodeDetailsWithChildren(Long nodeId) {
 //        Optional<plantBasic> nodeDetailsOptional = this.plantRepository.findById(nodeId);
 //
@@ -155,7 +161,79 @@ public class plantService {
 //            childNodeDetails.add(childNodeDTO);
 //        }
 //        return childNodeDetails;
- //   }
+    //   }
+//....................................................
+    public List<RootNode> getAllPlantsWithChildren() {
+        return plantRepository.findAllParents();
+    }
+
+    public List<String> getAllDistinctDivisions() {
+        return rootRepository.findDistinctDivisions();
+    }
+
+    public List<String> getPlantClassByDivision(String division) {
+        return rootRepository.findPlantClassByDivision(division);
+    }
+
+    public List<String> getOrdersByPlantClassAndDivision(String division, String plantClass) {
+        return rootRepository.findOrdersByPlantClassAndDivision(division, plantClass);
+    }
+
+    public List<String> getFamilies(String division, String plantClass, String order) {
+        return rootRepository.findFamilies(division, plantClass, order);
+    }
+
+    public List<Integer> getIds(String division, String plantClass, String order, String family) {
+        return rootRepository.findIds(division, plantClass, order, family);
+    }
+
+    public plantBasic getPlantByName(String plantName) {
+        return plantRepository.findByPlantName(plantName);
+    }
+
+    public Optional<RootNode> getKingdom(Long id) {
+        return rootRepository.findById(id);
+    }
 
 
+    public PlantDetailsDTO getPlantDetailsByName(String plantName) {
+        plantBasic plant = plantRepository.findByPlantName(plantName);
+
+        if (plant == null) {
+            // Handle the case where the plant with the given name is not found
+            return null;
+        }
+        RootNode rootNode = plant.getParentId();
+
+        PlantDetailsDTO plantDetailsDTO = new PlantDetailsDTO();
+        plantDetailsDTO.setId(plant.getId());
+        plantDetailsDTO.setPlantName(plant.getPlantName());
+        plantDetailsDTO.setDesc(plant.getDesc());
+        plantDetailsDTO.setGenus(plant.getGenus());
+        plantDetailsDTO.setSpecies(plant.getSpecies());
+        plantDetailsDTO.setDivision(rootNode.getDivision());
+        plantDetailsDTO.setPlantClass(rootNode.getPlantClass());
+        plantDetailsDTO.setRootId(rootNode.getId());
+        plantDetailsDTO.setRootPlantname(rootNode.getPlantName());
+        plantDetailsDTO.setOrder(rootNode.getOrder());
+        plantDetailsDTO.setFamily(rootNode.getFamily());
+        plantDetailsDTO.setImage_url(plant.getImage_url());
+
+
+        return plantDetailsDTO;
+    }
+
+    public List<String> getAllPlantNames() {
+        List<plantBasic> allPlants = plantRepository.findAll();
+
+        // Extract plant names using Java streams
+        return allPlants.stream()
+                .map(plantBasic::getPlantName)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getPlantNameSuggestions(String plantName) {
+        List<plantBasic> plants = plantRepository.findByPlantNameContainingIgnoreCase(plantName);
+        return plants.stream().map(plantBasic::getPlantName).collect(Collectors.toList());
+    }
 }

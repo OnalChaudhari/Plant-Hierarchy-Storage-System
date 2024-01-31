@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class RootDTO extends plantBasic{
@@ -22,7 +25,7 @@ public class RootDTO extends plantBasic{
     @NotBlank(message = "Family cannot be blank")
     private String family;
 
-
+    private List<PlantDTO> childNodes;
 
     public RootNode toEntity() {
         RootNode rootNode = new RootNode();
@@ -41,4 +44,5 @@ public class RootDTO extends plantBasic{
         this.order=order;
         this.family=family;
     }
+
 }

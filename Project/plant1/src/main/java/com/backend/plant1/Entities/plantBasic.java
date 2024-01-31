@@ -1,4 +1,5 @@
 package com.backend.plant1.Entities;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import jakarta.persistence.*;
 @Entity
@@ -10,16 +11,17 @@ public class plantBasic {
     private Long id;
 
     private String plantName;
-    @Column(name = "`desc`")
+    @Column(name = "`desc`" )
     private String desc;
 
     private String genus;
 
     private String species;
 
+    private String image_url;
+
     @ManyToOne
     @JoinColumn(name = "parent_id", nullable = false)
+    @JsonIgnore
     private RootNode parentId;
-
 }
-

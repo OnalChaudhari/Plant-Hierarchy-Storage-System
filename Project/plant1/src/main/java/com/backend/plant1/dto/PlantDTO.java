@@ -19,8 +19,10 @@ public class PlantDTO {
     private String species;
     @NotNull(message = "Parent ID cannot be null")
     private Long parentId;
+    private String plant;
+    private String image_url;
 
-    private List<PlantDTO> childNodes;
+    //private List<PlantDTO> childNodes;
 
     public plantBasic toEntity() {
         plantBasic plantBasic = new plantBasic();
@@ -28,6 +30,8 @@ public class PlantDTO {
         plantBasic.setDesc(this.desc);
         plantBasic.setGenus(this.genus);
         plantBasic.setSpecies(this.species);
+        plantBasic.setImage_url(this.image_url);
+
 
         // Set the parent if parentId is not null
         if (this.parentId != null) {
@@ -39,13 +43,16 @@ public class PlantDTO {
         return plantBasic;
     }
 
-    public PlantDTO(Long id, String plantName,String desc ,String genus,String species, plantBasic parentDetails, List<PlantDTO> childNode) {
+    public PlantDTO(Long id, String plantName,String desc ,String genus,String species,String image_url, plantBasic parentDetails) {  //, List<PlantDTO> childNode
         this.id = id;
         this.plantName = plantName;
         this.desc=desc;
         this.genus = genus;
         this.species = species;
+        this.image_url = image_url;
         this.parentId = parentDetails != null ? parentDetails.getId() : null;
-        this.childNodes = childNode;
+       // this.childNodes = childNode;
     }
+
+
 }
